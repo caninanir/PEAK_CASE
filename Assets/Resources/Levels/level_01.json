@@ -1,0 +1,50 @@
+{
+    "level_number": 1,
+    "grid_width": 6,
+    "grid_height": 6,
+    "move_count": 10,
+    "grid": [
+        "b",
+        "b",
+        "b",
+        "b",
+        "b",
+        "b",
+        "b",
+        "b",
+        "b",
+        "b",
+        "b",
+        "b",
+        "g",
+        "g",
+        "g",
+        "g",
+        "g",
+        "g",
+        "g",
+        "g",
+        "g",
+        "g",
+        "g",
+        "g",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r",
+        "r"
+    ],
+    "cube_goals": [
+        {
+            "cube_type": "r",
+            "count": 12
+        }
+    ]
+}
