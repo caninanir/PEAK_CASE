@@ -27,6 +27,7 @@ public class TransitionController : MonoBehaviour
     private Material fadeMaterial;
     private bool isFading = false;
     private Coroutine currentFadeCoroutine;
+    private bool radialFadeAvailable = false;
 
     public static UnityEvent OnFadeInComplete = new UnityEvent();
     public static UnityEvent OnFadeOutComplete = new UnityEvent();
@@ -60,30 +61,47 @@ public class TransitionController : MonoBehaviour
     private void CreateFadeMaterial()
     {
         Shader fadeShader = Shader.Find("UI/Default");
-        if (useRadialFade && radialFadeShader != null)
+        
+        if (useRadialFade)
         {
-            fadeShader = radialFadeShader;
-        }
-        else if (useRadialFade && radialFadeShader == null)
-        {
-            radialFadeShader = Shader.Find("UI/RadialFade");
             if (radialFadeShader != null)
+            {
                 fadeShader = radialFadeShader;
+            }
+            else
+            {
+                Shader foundShader = Shader.Find("UI/RadialFade");
+                if (foundShader != null)
+                {
+                    radialFadeShader = foundShader;
+                    fadeShader = foundShader;
+                }
+            }
+        }
+
+        if (fadeShader == null)
+        {
+            fadeShader = Shader.Find("UI/Default");
         }
 
         fadeMaterial = new Material(fadeShader);
 
-        if (fadeMaterial.HasProperty("_Center"))
+        radialFadeAvailable = useRadialFade && fadeMaterial.HasProperty("_RadialProgress");
+
+        if (radialFadeAvailable)
         {
-            fadeMaterial.SetVector("_Center", new Vector4(radialCenter.x, radialCenter.y, 0, 0));
-        }
-        if (fadeMaterial.HasProperty("_Smoothness"))
-        {
-            fadeMaterial.SetFloat("_Smoothness", 0.02f);
-        }
-        if (fadeMaterial.HasProperty("_Feather"))
-        {
-            fadeMaterial.SetFloat("_Feather", 0.1f);
+            if (fadeMaterial.HasProperty("_Center"))
+            {
+                fadeMaterial.SetVector("_Center", new Vector4(radialCenter.x, radialCenter.y, 0, 0));
+            }
+            if (fadeMaterial.HasProperty("_Smoothness"))
+            {
+                fadeMaterial.SetFloat("_Smoothness", 0.02f);
+            }
+            if (fadeMaterial.HasProperty("_Feather"))
+            {
+                fadeMaterial.SetFloat("_Feather", 0.1f);
+            }
         }
     }
 
@@ -114,14 +132,7 @@ public class TransitionController : MonoBehaviour
         isFading = true;
         CreateFadeCanvas();
 
-        if (useRadialFade)
-        {
-            fadeCanvasGroup.alpha = 1f;
-        }
-        else
-        {
-            fadeCanvasGroup.alpha = 1f;
-        }
+        fadeCanvasGroup.alpha = 1f;
         fadeCanvasGroup.interactable = false;
         fadeCanvasGroup.blocksRaycasts = true;
 
@@ -137,13 +148,10 @@ public class TransitionController : MonoBehaviour
             float t = elapsed / duration;
             float curveValue = 1f - fadeCurve.Evaluate(t);
 
-            if (useRadialFade)
+            if (radialFadeAvailable)
             {
                 fadeCanvasGroup.alpha = 1f;
-                if (fadeMaterial.HasProperty("_RadialProgress"))
-                {
-                    fadeMaterial.SetFloat("_RadialProgress", curveValue);
-                }
+                fadeMaterial.SetFloat("_RadialProgress", curveValue);
             }
             else
             {
@@ -171,14 +179,7 @@ public class TransitionController : MonoBehaviour
         isFading = true;
         CreateFadeCanvas();
 
-        if (useRadialFade)
-        {
-            fadeCanvasGroup.alpha = 1f;
-        }
-        else
-        {
-            fadeCanvasGroup.alpha = 0f;
-        }
+        fadeCanvasGroup.alpha = radialFadeAvailable ? 1f : 0f;
         fadeCanvasGroup.interactable = false;
         fadeCanvasGroup.blocksRaycasts = true;
 
@@ -194,13 +195,10 @@ public class TransitionController : MonoBehaviour
             float t = elapsed / duration;
             float curveValue = fadeCurve.Evaluate(t);
 
-            if (useRadialFade)
+            if (radialFadeAvailable)
             {
                 fadeCanvasGroup.alpha = 1f;
-                if (fadeMaterial.HasProperty("_RadialProgress"))
-                {
-                    fadeMaterial.SetFloat("_RadialProgress", curveValue);
-                }
+                fadeMaterial.SetFloat("_RadialProgress", curveValue);
             }
             else
             {
@@ -216,13 +214,10 @@ public class TransitionController : MonoBehaviour
             yield return null;
         }
 
-        if (useRadialFade)
+        if (radialFadeAvailable)
         {
             fadeCanvasGroup.alpha = 1f;
-            if (fadeMaterial.HasProperty("_RadialProgress"))
-            {
-                fadeMaterial.SetFloat("_RadialProgress", 1f);
-            }
+            fadeMaterial.SetFloat("_RadialProgress", 1f);
         }
         else
         {
@@ -243,6 +238,11 @@ public class TransitionController : MonoBehaviour
     private void CreateFadeCanvas()
     {
         if (fadeCanvasGO != null) return;
+
+        if (fadeMaterial == null)
+        {
+            CreateFadeMaterial();
+        }
 
         fadeCanvasGO = new GameObject("FadeTransitionCanvas");
         fadeCanvasGO.transform.SetParent(transform);
@@ -277,20 +277,14 @@ public class TransitionController : MonoBehaviour
         rectTransform.offsetMin = Vector2.zero;
         rectTransform.offsetMax = Vector2.zero;
 
-        if (useRadialFade && fadeMaterial != null)
+        if (radialFadeAvailable)
         {
-            if (fadeMaterial.HasProperty("_RadialProgress"))
-            {
-                fadeMaterial.SetFloat("_RadialProgress", 0.0f);
-            }
+            fadeMaterial.SetFloat("_RadialProgress", 0.0f);
             if (fadeMaterial.HasProperty("_Center"))
             {
                 fadeMaterial.SetVector("_Center", new Vector4(radialCenter.x, radialCenter.y, 0, 0));
             }
-            if (fadeImage != null)
-            {
-                fadeImage.color = Color.black;
-            }
+            fadeImage.color = Color.black;
         }
     }
 

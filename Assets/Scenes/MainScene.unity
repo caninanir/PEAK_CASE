@@ -976,7 +976,7 @@ MonoBehaviour:
   useRadialFade: 1
   useScaleEffect: 1
   radialCenter: {x: 0.5, y: 0.5}
-  radialFadeShader: {fileID: 0}
+  radialFadeShader: {fileID: 4800000, guid: bd1b941c5ca93a341b64fdbd31b8c979, type: 3}
 --- !u!1 &995824677
 GameObject:
   m_ObjectHideFlags: 0
