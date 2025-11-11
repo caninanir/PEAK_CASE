@@ -5,6 +5,9 @@ public class GameplayTestController : MonoBehaviour
 {
     public static GameplayTestController Instance { get; private set; }
 
+    private int clickCount;
+    private float clickTimer;
+
     private void Awake()
     {
         if (Instance == null)
@@ -53,6 +56,12 @@ public class GameplayTestController : MonoBehaviour
     {
         string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
         bool isLevelScene = currentScene == "LevelScene";
+        bool isMainScene = currentScene == "MainScene";
+        
+        if (isMainScene && Input.GetMouseButtonDown(0))
+        {
+            HandleMainMenuClick();
+        }
         
         if (Input.GetKeyDown(KeyCode.W))
         {
@@ -140,5 +149,29 @@ public class GameplayTestController : MonoBehaviour
     private void LoadDebugLevel(int levelNumber)
     {
         GameStateController.Instance.StartLevel(levelNumber);
+    }
+
+    private void HandleMainMenuClick()
+    {
+        if (Time.time - clickTimer > 10f)
+        {
+            clickCount = 0;
+        }
+
+        clickTimer = Time.time;
+        clickCount++;
+
+        if (clickCount >= 10)
+        {
+            SaveManager.Instance.ResetProgress();
+            clickCount = 0;
+            Debug.Log("Save progress reset via debug feature");
+            
+            MenuUIController menuUI = FindFirstObjectByType<MenuUIController>(FindObjectsInactive.Include);
+            if (menuUI != null)
+            {
+                menuUI.UpdateUI();
+            }
+        }
     }
 } 
