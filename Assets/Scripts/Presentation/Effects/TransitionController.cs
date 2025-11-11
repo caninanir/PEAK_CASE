@@ -18,6 +18,7 @@ public class TransitionController : MonoBehaviour
     [SerializeField] private bool useRadialFade = true;
     [SerializeField] private bool useScaleEffect = true;
     [SerializeField] private Vector2 radialCenter = new Vector2(0.5f, 0.5f);
+    [SerializeField] private Shader radialFadeShader;
 
     private GameObject fadeCanvasGO;
     private Canvas fadeCanvas;
@@ -59,11 +60,15 @@ public class TransitionController : MonoBehaviour
     private void CreateFadeMaterial()
     {
         Shader fadeShader = Shader.Find("UI/Default");
-        if (useRadialFade)
+        if (useRadialFade && radialFadeShader != null)
         {
-            Shader radialShader = Shader.Find("UI/RadialFade");
-            if (radialShader != null)
-                fadeShader = radialShader;
+            fadeShader = radialFadeShader;
+        }
+        else if (useRadialFade && radialFadeShader == null)
+        {
+            radialFadeShader = Shader.Find("UI/RadialFade");
+            if (radialFadeShader != null)
+                fadeShader = radialFadeShader;
         }
 
         fadeMaterial = new Material(fadeShader);

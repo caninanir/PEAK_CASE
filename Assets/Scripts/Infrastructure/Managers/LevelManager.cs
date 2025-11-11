@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using System.IO;
 
 public class LevelManager : MonoBehaviour
 {
@@ -37,26 +36,27 @@ public class LevelManager : MonoBehaviour
 
     private void LoadAllLevels()
     {
-        string levelsPath = "Assets/Resources/levels/";
+        TextAsset[] levelAssets = Resources.LoadAll<TextAsset>("Levels");
         
-        if (Directory.Exists(levelsPath))
+        foreach (TextAsset asset in levelAssets)
         {
-            string[] levelFiles = Directory.GetFiles(levelsPath, "level_*.json");
+            string fileName = asset.name;
             
-            foreach (string filePath in levelFiles)
+            if (fileName.StartsWith("level_"))
             {
-                string fileName = Path.GetFileNameWithoutExtension(filePath);
-                
-                if (fileName.StartsWith("level_"))
+                string levelNumberStr = fileName.Substring(6);
+                if (int.TryParse(levelNumberStr, out int levelNumber))
                 {
-                    string levelNumberStr = fileName.Substring(6);
-                    if (int.TryParse(levelNumberStr, out int levelNumber))
+                    try
                     {
-                        LevelData levelData = LoadLevelFromJSON(levelNumber);
+                        LevelData levelData = JsonUtility.FromJson<LevelData>(asset.text);
                         if (levelData != null)
                         {
                             allLevels[levelNumber] = levelData;
                         }
+                    }
+                    catch
+                    {
                     }
                 }
             }
@@ -66,7 +66,7 @@ public class LevelManager : MonoBehaviour
     private LevelData LoadLevelFromJSON(int levelNumber)
     {
         string fileName = $"level_{levelNumber:D2}";
-        TextAsset jsonFile = Resources.Load<TextAsset>($"levels/{fileName}");
+        TextAsset jsonFile = Resources.Load<TextAsset>($"Levels/{fileName}");
         
         if (jsonFile != null)
         {

@@ -38,11 +38,15 @@ public class GridLayoutService
 
     public void CalculateCellSize(Transform gridContainer, int gridWidth, int gridHeight)
     {
-        Canvas canvas = gridContainer.GetComponentInParent<Canvas>();
-        RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+        RectTransform uiContainerRect = FindUIContainer(gridContainer);
+        if (uiContainerRect == null)
+        {
+            Canvas canvas = gridContainer.GetComponentInParent<Canvas>();
+            uiContainerRect = canvas.GetComponent<RectTransform>();
+        }
         
-        float availableWidth = canvasRect.sizeDelta.x - paddingLeft - paddingRight;
-        float availableHeight = canvasRect.sizeDelta.y - paddingTop - paddingBottom;
+        float availableWidth = uiContainerRect.rect.width - paddingLeft - paddingRight;
+        float availableHeight = uiContainerRect.rect.height - paddingTop - paddingBottom;
         
         float maxCellWidth = (availableWidth - (maxGridWidth - 1) * cellSpacing) / maxGridWidth;
         float maxCellHeight = (availableHeight - (maxGridHeight - 1) * cellSpacing) / maxGridHeight;
@@ -99,15 +103,34 @@ public class GridLayoutService
         
         gridRect.sizeDelta = new Vector2(totalWidth, totalHeight);
         
-        Canvas canvas = gridContainer.GetComponentInParent<Canvas>();
-        RectTransform canvasRect = canvas.GetComponent<RectTransform>();
-        float availableWidth = canvasRect.sizeDelta.x - paddingLeft - paddingRight;
-        float availableHeight = canvasRect.sizeDelta.y - paddingTop - paddingBottom;
+        RectTransform uiContainerRect = FindUIContainer(gridContainer);
+        if (uiContainerRect == null)
+        {
+            Canvas canvas = gridContainer.GetComponentInParent<Canvas>();
+            uiContainerRect = canvas.GetComponent<RectTransform>();
+        }
         
-        float centerX = paddingLeft + availableWidth * 0.5f - canvasRect.sizeDelta.x * 0.5f;
-        float centerY = -paddingTop - availableHeight * 0.5f + canvasRect.sizeDelta.y * 0.5f;
+        float availableWidth = uiContainerRect.rect.width - paddingLeft - paddingRight;
+        float availableHeight = uiContainerRect.rect.height - paddingTop - paddingBottom;
+        
+        float centerX = paddingLeft + availableWidth * 0.5f - uiContainerRect.rect.width * 0.5f;
+        float centerY = -paddingTop - availableHeight * 0.5f + uiContainerRect.rect.height * 0.5f;
         
         gridRect.anchoredPosition = new Vector2(centerX, centerY);
+    }
+    
+    private RectTransform FindUIContainer(Transform gridContainer)
+    {
+        Transform current = gridContainer;
+        while (current != null)
+        {
+            if (current.name == "UIContainer")
+            {
+                return current.GetComponent<RectTransform>();
+            }
+            current = current.parent;
+        }
+        return null;
     }
 }
 

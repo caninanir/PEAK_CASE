@@ -36,19 +36,22 @@ public class GridLayoutManager : MonoBehaviour
     
     public void SetupGridLayout(int gridWidth, int gridHeight, Transform gridContainer, Transform gridBackgroundContainer)
     {
-        RectTransform canvasRect = gameplayCanvas.GetComponent<RectTransform>();
-        Vector2 canvasSize = canvasRect.sizeDelta;
+        RectTransform uiContainerRect = FindUIContainer(gridContainer);
+        if (uiContainerRect == null)
+        {
+            uiContainerRect = gameplayCanvas.GetComponent<RectTransform>();
+        }
         
-        float availableWidth = canvasSize.x - (gridPadding.x * 2);
-        float availableHeight = canvasSize.y - (gridPadding.y * 2);
+        float availableWidth = uiContainerRect.rect.width - (gridPadding.x * 2);
+        float availableHeight = uiContainerRect.rect.height - (gridPadding.y * 2);
         
         float maxCellWidth = (availableWidth - (gridWidth - 1) * cellSpacing) / gridWidth;
         float maxCellHeight = (availableHeight - (gridHeight - 1) * cellSpacing) / gridHeight;
         
         CellSize = Mathf.Min(maxCellWidth, maxCellHeight);
         
-        SetupGridContainer(gridWidth, gridHeight, gridContainer);
-        SetupGridBackground(gridWidth, gridHeight, gridContainer, gridBackgroundContainer);
+        SetupGridContainer(gridWidth, gridHeight, gridContainer, uiContainerRect);
+        SetupGridBackground(gridWidth, gridHeight, gridContainer, gridBackgroundContainer, uiContainerRect);
         SetupGridMask(gridBackgroundContainer);
 
         RectTransform gridRectTf = gridContainer.GetComponent<RectTransform>();
@@ -66,7 +69,7 @@ public class GridLayoutManager : MonoBehaviour
         gridContainer.SetSiblingIndex(bgIndex + 1);
     }
     
-    private void SetupGridContainer(int gridWidth, int gridHeight, Transform gridContainer)
+    private void SetupGridContainer(int gridWidth, int gridHeight, Transform gridContainer, RectTransform uiContainerRect)
     {
         RectTransform gridRect = gridContainer.GetComponent<RectTransform>();
         if (gridRect == null)
@@ -75,10 +78,8 @@ public class GridLayoutManager : MonoBehaviour
         float totalWidth = gridWidth * CellSize + (gridWidth - 1) * cellSpacing;
         float totalHeight = gridHeight * CellSize + (gridHeight - 1) * cellSpacing;
         
-        RectTransform canvasRect = gameplayCanvas.GetComponent<RectTransform>();
-        Vector2 canvasSize = canvasRect.sizeDelta;
-        float scaleFactorX = canvasSize.x / 1080f;
-        float scaleFactorY = canvasSize.y / 1920f;
+        float scaleFactorX = uiContainerRect.rect.width / 1080f;
+        float scaleFactorY = uiContainerRect.rect.height / 1920f;
         
         float offsetX = (gridOffsetLeft - gridOffsetRight) * scaleFactorX * 0.5f;
         float offsetY = (gridOffsetUp - gridOffsetDown) * scaleFactorY * 0.5f;
@@ -89,7 +90,7 @@ public class GridLayoutManager : MonoBehaviour
         gridRect.sizeDelta = new Vector2(totalWidth, totalHeight);
     }
     
-    private void SetupGridBackground(int gridWidth, int gridHeight, Transform gridContainer, Transform gridBackgroundContainer)
+    private void SetupGridBackground(int gridWidth, int gridHeight, Transform gridContainer, Transform gridBackgroundContainer, RectTransform uiContainerRect)
     {
         backgroundImage = null;
         for (int i = 0; i < gridBackgroundContainer.childCount; i++)
@@ -115,10 +116,8 @@ public class GridLayoutManager : MonoBehaviour
         RectTransform gridRect = gridContainer.GetComponent<RectTransform>();
         RectTransform bgRect = backgroundImage.GetComponent<RectTransform>();
         
-        RectTransform canvasRect = gameplayCanvas.GetComponent<RectTransform>();
-        Vector2 canvasSize = canvasRect.sizeDelta;
-        float scaleFactorX = canvasSize.x / 1080f;
-        float scaleFactorY = canvasSize.y / 1920f;
+        float scaleFactorX = uiContainerRect.rect.width / 1080f;
+        float scaleFactorY = uiContainerRect.rect.height / 1920f;
         
         float offsetX = (backgroundOffsetLeft - backgroundOffsetRight) * scaleFactorX * 0.5f;
         float offsetY = (backgroundOffsetUp - backgroundOffsetDown) * scaleFactorY * 0.5f;
@@ -138,6 +137,20 @@ public class GridLayoutManager : MonoBehaviour
         {
             backgroundImage.type = backgroundImageType;
         }
+    }
+    
+    private RectTransform FindUIContainer(Transform gridContainer)
+    {
+        Transform current = gridContainer;
+        while (current != null)
+        {
+            if (current.name == "UIContainer")
+            {
+                return current.GetComponent<RectTransform>();
+            }
+            current = current.parent;
+        }
+        return null;
     }
     
     private void SetupGridMask(Transform gridBackgroundContainer)
